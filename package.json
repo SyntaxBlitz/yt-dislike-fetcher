@@ -1,0 +1,17 @@
+{
+  "name": "yt-dislike-fetcher",
+  "version": "1.0.0",
+  "description": "Allows creators to self-host their dislike-fetching code in a way that makes it impractical for creators to tamper with results from the YouTube API. Works in tandem with YT Dislike Proxy.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "Timothy J. Aveni",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^12.0.3",
+    "express": "^4.17.2",
+    "express-session": "^1.17.2",
+    "googleapis": "^92.0.0"
+  }
+}

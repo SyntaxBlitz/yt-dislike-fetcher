@@ -1,0 +1,15 @@
+
+participant Creator
+participant Extension
+participant Trusted third party
+participant YouTube API
+
+Creator->Trusted third party: Creator logs directly into trusted third-party,\ngranting the "youtube.readonly" scope
+
+Extension->Trusted third party: Extension asks for dislikes\non a particular video
+
+Trusted third party->YouTube API: Third party uses the\n"youtube.readonly" scope to\nrequest dislikes for this video
+
+YouTube API->Trusted third party: YouTube responds with\ndislike count
+
+Trusted third party->Extension: Third party responds with\ndislike count

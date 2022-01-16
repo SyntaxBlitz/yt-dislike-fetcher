@@ -1,0 +1,42 @@
+# title This is a title
+
+participant YT Dislike Fetcher
+participant YT Dislike Proxy
+participant YouTube API
+activecolor #grey
+
+YT Dislike Fetcher<->YouTube API: First, YT Dislike Fetcher interacts directly with YouTube's servers, logging in and receiving\nan OAuth Bearer API token with the "youtube.readonly" scope. The fetcher can also ask\nthe YouTube API for video IDs whose dislikes should be requested.
+
+YT Dislike Fetcher->YT Dislike Proxy: YT Dislike Fetcher opens an HTTP proxy\nover TLS.
+
+YT Dislike Proxy->YT Dislike Fetcher: Connection Established. This response\nincludes a header with a UUID for this proxy\nsession.
+
+parallel 
+
+YT Dislike Fetcher->YT Dislike Proxy: YT Dislike Fetcher requests dislikes from\nYouTube, initiating a TLS connection directly\nwith the YouTube API through the proxy.
+
+
+YT Dislike Proxy->YouTube API: Request is forwarded to YouTube API. Messages\nare opaque to the proxy, which keeps the creator's\nOAuth token private.
+
+activate YT Dislike Proxy
+parallel off
+
+note right of YT Dislike Proxy:YT Dislike Proxy is recording the encrypted TLS\ntraffic sent from the YouTube API to YT Dislike\nFetcher, but cannot (at this stage) decrypt the\nresponse, because TLS creates a secure tunnel\nbetween the fetcher and the YouTube API.
+
+parallel
+YouTube API->YT Dislike Proxy: YouTube API returns dislike counts, still opaque\nto the proxy.
+
+YT Dislike Proxy->YT Dislike Fetcher: Response from YouTube is forwarded to the\nYT Dislike Fetcher, which can (but does not\nneed to) decrypt and read it.
+
+parallel off
+
+deactivate YT Dislike Proxy
+
+note right of YT Dislike Fetcher: Instead of deleting all ephemeral TLS keys\nused in the exchange, YT Dislike Fetcher\nretains the **server traffic key** from the\nYouTube request, which was used to encrypt\nYouTube's response to the API request (but\nnot the request, which was encrypted with \nthe client traffic key).
+
+
+YT Dislike Fetcher->YT Dislike Proxy: YT Dislike Fetcher sends the server traffic key\n(via HTTPS) to YT Dislike Proxy alongside the\nUUID associated with the proxy session.
+
+box over YT Dislike Proxy:Now, YT Dislike Proxy can decrypt the previously-captured response\nfrom the YouTube API. Since YT Dislike Fetcher did not send the //client//\ntraffic key, YT Dislike Proxy **cannot** read the API **request**, which\ncontains API credentials sent by YT Dislike Fetcher, even if the\nproxy did capture that traffic.\n\nIf the response from YouTube matches the expected format, YT Dislike\nProxy ingests the fetched dislike counts and returns to the fetcher.
+
+YT Dislike Proxy->YT Dislike Fetcher: Response (2xx or 4xx, depending on ingestion\nsuccess)

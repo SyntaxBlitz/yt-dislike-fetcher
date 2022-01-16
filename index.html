@@ -1,0 +1,173 @@
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <title>
+      YT Dislike Fetcher
+    </title>
+    <meta charset="utf-8">
+
+    <style>
+      body {
+        background-color: #111;
+        color: white;
+        font-family: sans-serif;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .loadingScreen:not(.hidden) {
+        display: flex;
+        margin-top: 40vh;
+        justify-content: center;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .authScreen:not(.hidden) {
+        display: flex;
+        margin-top: 40vh;
+        justify-content: center;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .authInstructions {
+        margin-bottom: 16px;
+      }
+      
+      .authScreen a {
+        color: white;
+        background-color: #ff4444;
+        text-decoration: none;
+        padding: 16px;
+        border-radius: 4px;
+      }
+
+      .authScreen a:hover {
+        background-color: #ff5555;
+      }
+
+      .videoListScreen:not(.hidden) {
+        display: flex;
+        margin: 20vh 0;
+        justify-content: center;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .videoList {
+        padding: 0;
+      }
+
+      .videoListMessage {
+        font-size: 16pt;
+      }
+
+      .video {
+        list-style-type: none;
+      }
+
+      .video a {
+        text-decoration: none;
+        color: white;
+        display: block;
+        margin: 8px 0;
+        width: 400px;
+        background-color: #333;
+        padding: 16px;
+      }
+
+      .fetchDislikesButton {
+        color: white;
+        background-color: #ff4444;
+        text-decoration: none;
+        padding: 16px;
+        border-radius: 4px;
+      }
+
+      .fetchDislikesButton:hover {
+        background-color: #ff5555;
+      }
+    </style>
+
+    <script>
+      const videoIds = [];
+
+      window.onload = async () => {
+        const response = await fetch('/api/get-public-videos', { credentials: 'include' }).then(res => res.json());
+
+        document.getElementById('loading').classList.add('hidden');
+
+        if (response.error === 'Not logged in') {
+          document.getElementById('authLink').classList.remove('hidden');
+        } else if (response.error) {
+          // TODO
+        } else {
+          const { publicVideos } = response;
+          videoIds.push(...publicVideos.map(video => video.videoId));
+          showVideos(publicVideos);
+        }
+      };
+
+      const showVideos = (publicVideos) => {
+        const videoListContainer = document.getElementById('videoListContainer');
+        const videoList = document.getElementById('videoList');
+        videoListContainer.classList.remove('hidden');
+
+        publicVideos.forEach(video => {
+          const videoLi = document.createElement('li');
+          videoLi.className = 'video';
+
+          const videoLink = document.createElement('a');
+          videoLink.href = `https://www.youtube.com/watch?v=${video.videoId}`;
+          videoLink.innerText = video.title;
+          videoLi.appendChild(videoLink);
+
+          videoList.appendChild(videoLi);
+        });
+
+        document.getElementById('fetchDislikesButton').onclick = fetchDislikes;
+      };
+
+      const fetchDislikes = (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const response = fetch('/api/fetch-dislikes', {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ videoIds: videoIds.slice(0, 50) }), // TODO: we can support more than 50 later.
+        }).then(res => res.json());
+      };
+    </script>
+  </head>
+  <body>
+    <div id="loading" class="loadingScreen">
+      Loading...
+    </div>
+
+    <div id="authLink" class="authScreen hidden">
+      <div class="authInstructions">
+        Authorize below to fetch your public videos.
+      </div>
+      <a href="{{authUrl}}">Authorize</a>
+    </div>
+
+    <div id="videoListContainer" class="videoListScreen hidden">
+      <div class="videoListMessage">
+        Found these public videos:
+      </div>
+      <ul id="videoList" class="videoList">
+      </ul>
+
+      <a href="#" id="fetchDislikesButton" class="fetchDislikesButton">
+        Fetch dislikes
+      </a>
+    </div>
+  </body>
+</html>
