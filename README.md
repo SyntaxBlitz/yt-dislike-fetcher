@@ -63,7 +63,7 @@ It's worth noting that this solution *does* involve trust; creators would have t
 
 ## This repository
 
-This project (hosted across two separate repositories; here and in the related [YT Dislike Proxy](#) repository) aims to solve the problem by letting creators self-host the fetcher web application (so that they have full control over which requests are sent to the YouTube server, fetching only dislike counts from the YouTube API) while maintaining a reasonable degree of certainty that the responses from YouTube have not been tampered with.
+This project (hosted across two separate repositories; here and in the related [YT Dislike Proxy](https://github.com/SyntaxBlitz/yt-dislike-proxy) repository) aims to solve the problem by letting creators self-host the fetcher web application (so that they have full control over which requests are sent to the YouTube server, fetching only dislike counts from the YouTube API) while maintaining a reasonable degree of certainty that the responses from YouTube have not been tampered with.
 
 The trick is to require the creator to proxy their requests to the YouTube API through a server controlled by the extension author. As long as the requests are made using TLS, this is secure for the creator, for the same reason that HTTPS protects people using café WiFi. Although the TCP packets are being routed through the extension author's server (which is running the YT Dislike Proxy application), TLS creates a secure tunnel between the creator-controlled fetcher and the YouTube API that prevents tampering and also protects the creator's OAuth token (which can be used to make any requests permitted by the authorized `youtube.readonly` scope). Thus, the creator need not trust the extension author.
 
